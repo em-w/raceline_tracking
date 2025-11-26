@@ -4,7 +4,7 @@ from numpy.typing import ArrayLike
 from simulator import RaceTrack
 
 class PIDController:
-    def __init__(self, K_p: float, K_i: float, K_d: float, dt: float = 0.1):
+    def __init__(self, K_p: float, K_i: float, K_d: float, dt: float = 0.01):
         self.K_p = K_p
         self.K_i = K_i
         self.K_d = K_d
@@ -67,10 +67,9 @@ def controller(
     centerline_distances = np.linalg.norm(racetrack.centerline - state[0:2], axis=1)
     closest_idx = np.argmin(centerline_distances)
     
-    # compute desired heading based on one point ahead on the centerline
+    # compute desired heading
     lookahead_idx = (closest_idx + 3) % len(racetrack.centerline)
     lookahead_pt = racetrack.centerline[lookahead_idx]
-    
     heading = np.arctan2(
         lookahead_pt[1] - state[1],
         lookahead_pt[0] - state[0]
@@ -78,6 +77,6 @@ def controller(
     
     heading = wrap_to_pi(heading) 
     delta = wrap_to_pi(heading - state[4])
-    desired_velocity = 50 - 40 * abs(delta)
+    desired_velocity = 100 * (1 - abs(delta) / np.pi) #60 - 30 * abs(delta)
 
     return np.array([delta, desired_velocity]).T
